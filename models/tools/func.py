@@ -11,3 +11,13 @@ def sum(x: np.ndarray) -> np.ndarray:
     if type(x) != np.ndarray:
         x = np.array(x)
     return np.ones(shape = (1, np.size(x, axis = 0))) @ x
+
+def softmax(x: np.ndarray) -> np.ndarray:
+    '''
+    Return the softmax of an array
+    '''
+    if type(x) != np.ndarray:
+        x = np.array(x)
+    e_x = np.exp(x)
+    A = e_x / e_x.sum(axis = 0)
+    return A 

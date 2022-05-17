@@ -1,17 +1,17 @@
-import preprocess
-import func
+from .tools import preprocess
+from .tools import func
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import optimize as opt
 import numpy as np
 
 import logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', filename='logistic_regression.log', filemode='w')
-
+'''logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', filename='logistic_regression.log', filemode='w')
+'''
 
 def _cost(theta, x, y, lambda_):
     SAMPLE_SIZE = np.size(x, 0)
-    reg = lambda_ / (2 * SAMPLE_SIZE) * np.sum(np.square(theta))
+    reg = lambda_ / (2 * SAMPLE_SIZE) * func.sum(np.square(theta))
     y_hat = func.sigmoid(x @ theta)
     c = -func.sum(y * np.log(y_hat) + (1 - y) * np.log(1 - y_hat))
     return c + reg
@@ -44,40 +44,46 @@ class LogisticRegression:
         self._use_gd = False
         self._method = None
         self._iterate_num = None
+        self._disp = False
+        self._lambda_ = 0
         logging.info('Object initialized')
 
     def set_x(self, value):
         self._x = value
         self._SAMPLE_SIZE = np.size(value, 0)
         self._SIZE = np.size(value)
-        logging.info('x set')
+        logging.info('x is set')
 
     def set_y(self, value):
         self._y = np.array(value)
         self._NUM_CLASS = np.size(np.unique(self._y))
-        logging.info('y set')
+        logging.info('y is set')
 
     def set_lambda(self, value: float):
         self._lambda_ = value if type(value) in [float, int] else 0.1
-        logging.info('lambda set to {}'.format(value))
+        logging.info('lambda is set to {}'.format(value))
 
     def set_method(self, value):
         self._method = value
-        logging.info('method set to {}'.format(value))
+        logging.info('method is set to {}'.format(value))
 
     def set_iter_num(self, value):
         self._iterate_num = value
-        logging.info('iterate_num set to {}'.format(value))
+        logging.info('iterate_num is set to {}'.format(value))
 
     def set_scaling_method(self, value):
         if value not in ['standardize', 'normalize']:
             raise ValueError('scaling_method must be "standardize" or "normalize"')
         self._scaling_method = value
-        logging.info('scaling_method set to {}'.format(value))
+        logging.info('scaling_method is set to {}'.format(value))
 
     def use_gradient_descent(self, value: bool):
         self._use_gd = value
-        logging.info('use_gradient_descent set to {}'.format(value))
+        logging.info('use_gradient_descent is set to {}'.format(value))
+
+    def set_disp(self, value: bool):
+        self._disp = value
+        logging.info('disp set to {}'.format(value))
 
     def fit(self): # Using one vs all
         logging.info('Fitting data...')
@@ -107,14 +113,14 @@ class LogisticRegression:
         y = np.array(pd.get_dummies(self._y))
 
         res = []
-        for i in range(y.shape[1]):
+        for i in range(self._NUM_CLASS):
             y_i = y[:, i]
             if self._use_gd:
                 theta = _gradient_decent(x, y_i, lambda_, 0.1, iterations=num_iters)
                 logging.info('Gradient descent has been used {} times'.format(i + 1))
             else:
                 theta = preprocess.init_theta(x.shape[1])
-                theta = opt.minimize(fun= _cost, x0= theta,args= (x, y_i, lambda_), jac = _grad, method=method, options= {'maxiter': num_iters}).x
+                theta = opt.minimize(fun= _cost, x0= theta,args= (x, y_i, lambda_), jac = _grad, method=method, options= {'maxiter': num_iters, 'disp': self._disp}).x
             res.append(theta)
         self._theta = np.array(res)
         logging.info('Model fitted')
@@ -131,22 +137,30 @@ class LogisticRegression:
         else:
             x = np.array(sample)
         x = np.hstack((np.array([1]).reshape(1, 1), np.reshape(x, (1, np.size(x)))))
-        return np.argmax(func.sigmoid(x @ self._theta.T))
+        res = func.softmax(func.sigmoid(x @ self._theta.T).reshape(self._NUM_CLASS, 1))
+        id = np.argmax(res)
+        print(res.reshape(np.size(res)),)
+        return self._y[id], pd.DataFrame(np.vstack((self._y, res.reshape(np.size(res)))).T, columns=['Actual', 'Predicted'])
+
+    def cost(self):
+        SAMPLE_SIZE = self._SAMPLE_SIZE
+        SIZE = self._SIZE
+        x = np.reshape(np.copy(self._x), (SAMPLE_SIZE, SIZE // SAMPLE_SIZE))
+        theta = self._theta
+        lambda_ = self._lambda_
+        scaling = self._scaling
+        if scaling[0] == 'standardize':
+            x = (np.array(x) - scaling[1]) / scaling[2]
+        elif scaling[0] == 'normalize':
+            max = scaling[1]
+            min = scaling[2]
+            x = (np.array(x) - min) / (max - min)
+        x = np.hstack((np.ones((SAMPLE_SIZE, 1)), x))        
+        y = np.array(pd.get_dummies(self._y))
+        res = []
+        for i in range(self._NUM_CLASS):
+            y_i = y[:, i]
+            res += [_cost(theta[i], x, y_i, lambda_)]
+        return np.array(res)
 
 
-if __name__ == '__main__':
-    from keras.datasets import mnist
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
-    lr = LogisticRegression()
-    lr.set_x(x_train[:10000])
-    lr.set_y(y_train[:10000])
-    lr.use_gradient_descent(False)
-    lr.set_lambda(0.1)
-    lr.set_iter_num(50)
-    lr.set_method('BFGS')
-    lr.set_scaling_method('standardize')
-    lr.fit()
-    correct = 0
-    for i in range(np.size(x_test, 0)):
-        correct += lr.predict(x_test[i]) == y_test[i]
-    print('accuracy: ', correct / np.size(x_test, 0))
