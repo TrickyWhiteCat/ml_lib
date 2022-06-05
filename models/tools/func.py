@@ -21,3 +21,15 @@ def softmax(x: np.ndarray) -> np.ndarray:
     e_x = np.exp(x)
     A = e_x / e_x.sum(axis = 0)
     return A 
+
+def shuffle(x: np.ndarray, y: np.ndarray):
+    '''
+    Return suffled data
+    '''
+    if type(x) != np.ndarray:
+        x = np.array(x)
+    if type(y) != np.ndarray:
+        y = np.array(y)
+    index = np.arange(x.shape[0])
+    np.random.shuffle(index)
+    return x[index], y[index]

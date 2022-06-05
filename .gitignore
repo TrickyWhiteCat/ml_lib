@@ -1,9 +1,5 @@
 *.pyc
 *.log
-<<<<<<< HEAD
 .vscode/
-=======
-.vscode/
->>>>>>> ab62371d81c7fbb6a9cc8bf410eaa2e06e768a12
 debug.py
 testing.ipynb
