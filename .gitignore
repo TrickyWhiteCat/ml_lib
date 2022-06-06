@@ -3,3 +3,4 @@
 .vscode/
 testing.ipynb
 debug.py
+__pycache__
