@@ -1,5 +1,5 @@
 *.pyc
 *.log
 .vscode/
-debug.py
 testing.ipynb
+debug.py
