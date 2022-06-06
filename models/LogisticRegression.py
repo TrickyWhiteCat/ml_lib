@@ -1,10 +1,10 @@
+from .model import Model
 from .tools import preprocess
 from .tools import func
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import optimize as opt
 import numpy as np
-
 import logging
 logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', filename='logistic_regression.log', filemode='w')
 
@@ -21,68 +21,15 @@ def _grad(theta, x, y, lambda_):
     grad = (x.T @ (y_hat - y)) / SAMPLE_SIZE + lambda_ / SAMPLE_SIZE * theta
     return grad
 
-def _gradient_descent(x, y, lambda_, learning_rate, iterations, **kwargs):
-    if 'plot_cost' in kwargs:
-        plot = kwargs['plot_cost']
-    else:
-        plot = False
-    theta = preprocess.init_theta(x.shape[1])
-    for i in range(iterations):
-        theta -= learning_rate * _grad(theta, x, y, lambda_)
-        if plot:
-            cost = _cost(theta, x, y, lambda_)
-            costs = [] if i == 0 else costs + [cost]
-    if plot:
-        plt.xlabel('iteration')
-        plt.ylabel('cost')
-        plt.plot(costs)
-    return theta
-
-def _stochastic_gradient_descent(x, y, lambda_, learning_rate, iterations, **kwargs):
-    logger = logging.getLogger('StochasticGD')
-    NUM_FEATURES = x.shape[1]
-    if 'plot_cost' in kwargs:
-        plot = kwargs['plot_cost']
-    else:
-        plot = False
-    theta = preprocess.init_theta(x.shape[1])
-    x, y = func.shuffle(x, y)
-    costs = []
-    for i in range(iterations):
-        logger.info('Iteration {} is started'.format(i + 1))
-        temp = 0
-        for j in range(x.shape[0]):
-            theta -= learning_rate * _grad(theta, x[j].reshape(1, NUM_FEATURES), y[j], lambda_)
-            if plot:
-                # Plot the avg cost of every 100 iterations
-                temp = temp + _cost(theta, x, y, lambda_)[0]
-                if (j + 1) % 500 == 0 or j == x.shape[0] - 1:
-                    costs =costs + [temp / 500 if (j + 1) % 100 == 0 else temp / (x.shape[0] % 500)]
-                    temp = 0
-        logger.info('Iteration {} is finished'.format(i + 1))
-
-    plt.xlabel('Iteration (x1000)')
-    plt.ylabel('cost')
-    plt.plot(np.array(costs))
-    return theta
-
-class LogisticRegression:
+class LogisticRegression(Model):
     def __init__(self):
-        import logging
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', filename='logistic_regression.log', filemode='w')
         self._use_gd = False
         self._method = None
-        self._iterate_num = 50
         self.disp = False
         self._lambda_ = 0
         self._learning_rate = 1
+        self._scaling_method = None
         logging.info('Object initialized')
-
-    def set_x(self, value):
-        self._x = value
-        self._SAMPLE_SIZE = np.size(value, 0)
-        self._SIZE = np.size(value)
-        logging.info('x is set')
 
     def set_y(self, value):
         self._y = np.array(value)
@@ -103,31 +50,9 @@ class LogisticRegression:
         self._learning_rate = value
         logging.info('learning_rate set to {}'.format(value))
 
-    def set_iter_num(self, value):
-        self._iterate_num = value
-        logging.info('iterate_num is set to {}'.format(value))
-
-    def set_scaling_method(self, value):
-        if value not in ['standardize', 'normalize']:
-            raise ValueError('scaling_method must be "standardize" or "normalize"')
-        self._scaling_method = value
-        logging.info('scaling_method is set to {}'.format(value))
-
-    def _scale_feature_x(self):
-          # Make sure x is 2D array
-        x = np.reshape(np.copy(self._x), (self._SAMPLE_SIZE, self._SIZE // self._SAMPLE_SIZE))
-        if self._scaling_method == 'standardize':
-            self._scaling = preprocess.stardardize(x)
-        else:
-            self._scaling = preprocess.normalize(x)
-        logging.info('Data preprocessed using {}'.format(self._scaling_method))
-
-    def _scale_feature(self, x):
-        return np.nan_to_num((x - self._scaling[1]) / self._scaling[2])
-
-    def use_gradient_descent(self, value: bool):
-        self._use_gd = value
-        logging.info('use_gradient_descent is set to {}'.format(value))
+    def set_num_iters(self, value):
+        self._num_iters = value
+        logging.info('num_iters is set to {}'.format(value))
 
     def fit(self): # Using one vs all
         logging.info('Fitting data...')
@@ -139,7 +64,7 @@ class LogisticRegression:
         SAMPLE_SIZE = self._SAMPLE_SIZE
         lambda_ = self._lambda_
         method = self._method
-        num_iters = self._iterate_num
+        num_iters = self._num_iters
 
         # Data preprocessing
           # Feature scaling
@@ -150,22 +75,21 @@ class LogisticRegression:
         # Map y to one-hot encoding to use one vs all if necessary
         y = np.array(pd.get_dummies(self._y))
 
+        logging.info('Attempting to fit data using {}...'.format('gradient descent' if self._use_gd else ('scipy minimize with ' + method) if method else 'scipy minimize'))
         res = []
         for i in range(self._NUM_CLASS):
             y_i = y[:, i]
             if self._use_gd:
-                if SAMPLE_SIZE > 1000000:
+                if SAMPLE_SIZE > 1:
                     logging.warning('Use stochastic gradient descent for large sample size')
-                    theta = _stochastic_gradient_descent(x, y_i, lambda_, learning_rate=self._learning_rate, iterations = num_iters, plot_cost=self.disp)
+                    theta = func.stochastic_gradient_descent(x, y_i, lambda_, grad = _grad, costf = _cost, learning_rate=self._learning_rate, iterations = num_iters, plot_cost=self.disp)
                 else:
-                    theta = _gradient_descent(x, y_i, lambda_, learning_rate= self._learning_rate, iterations=num_iters, plot_cost=self.disp)
+                    theta = func.gradient_descent(x, y_i, lambda_, grad = _grad, costf = _cost, learning_rate= self._learning_rate, iterations=num_iters, plot_cost=self.disp)
             else:
                 theta = preprocess.init_theta(x.shape[1])
                 theta = opt.minimize(fun= _cost, x0= theta,args= (x, y_i, lambda_), jac = _grad, method=method, options= {'maxiter': num_iters, 'disp': self.disp}).x
             res.append(theta)
         self._theta = np.array(res)
-        if self.disp:
-            plt.show()
         logging.info('Model fitted')
 
     def predict(self, sample):
