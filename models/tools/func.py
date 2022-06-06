@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from . import preprocess
 
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
@@ -33,3 +35,47 @@ def shuffle(x: np.ndarray, y: np.ndarray):
     index = np.arange(x.shape[0])
     np.random.shuffle(index)
     return x[index], y[index]
+
+def gradient_descent(x, y, lambda_, grad, learning_rate, iterations, costf = None, **kwargs):
+    if 'plot_cost' in kwargs:
+        plot = kwargs['plot_cost']
+    else:
+        plot = False
+    theta = preprocess.init_theta(x.shape[1])
+    for i in range(iterations):
+        theta -= learning_rate * grad(theta, x, y, lambda_)
+        if plot and costf:
+            cost = costf(theta, x, y, lambda_)
+            costs = [] if i == 0 else costs + [cost]
+    if plot and costf:
+        plt.xlabel('iteration')
+        plt.ylabel('cost')
+        plt.plot(costs)
+        plt.show()
+    return theta
+
+def stochastic_gradient_descent(x, y, lambda_, grad, learning_rate, iterations, costf = None, **kwargs):
+    NUM_FEATURES = x.shape[1]
+    if 'plot_cost' in kwargs:
+        plot = kwargs['plot_cost']
+    else:
+        plot = False
+    theta = preprocess.init_theta(x.shape[1])
+    x, y = shuffle(x, y)
+    costs = []
+    for i in range(iterations):
+        temp = 0
+        for j in range(x.shape[0]):
+            theta -= learning_rate * grad(theta, x[j].reshape(1, NUM_FEATURES), y[j], lambda_)
+            if plot and costf:
+                # Plot the avg cost of every 100 iterations
+                temp = temp + np.nan_to_num(costf(theta, x, y, lambda_))[0] 
+                if (j + 1) % 100 == 0 or j == x.shape[0] - 1:
+                    costs =costs + [temp / 100 if (j + 1) % 100 == 0 else temp / (x.shape[0] % 100)]
+                    temp = 0
+    if plot and costf:
+        plt.xlabel('Iteration (x100)')
+        plt.ylabel('cost')
+        plt.plot(np.array(costs))
+        plt.show()
+    return theta
