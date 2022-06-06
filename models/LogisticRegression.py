@@ -6,7 +6,7 @@ from scipy import optimize as opt
 import numpy as np
 
 import logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', filename='logistic_regression.log', filemode='w')
+logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', filename='logistic_regression.log', filemode='w')
 
 def _cost(theta, x, y, lambda_):
     SAMPLE_SIZE = np.size(x, 0)
