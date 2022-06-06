@@ -203,7 +203,7 @@ class LogisticRegression(Model):
         for i in range(self._NUM_CLASS):
             y_i = y[:, i]
             if self._use_gd:
-                if SAMPLE_SIZE > 1:
+                if SAMPLE_SIZE > 1000000:
                     logging.warning('Use stochastic gradient descent for large sample size')
                     theta = func.stochastic_gradient_descent(x, y_i, lambda_, grad = self._grad, costf = self._cost, learning_rate=self._learning_rate, iterations = num_iters, plot_cost=self.disp)
                 else:

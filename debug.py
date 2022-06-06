@@ -5,8 +5,9 @@ import numpy as np
 lr = LogisticRegression()
 lr.set_x(x_train[:10000])
 lr.set_y(y_train[:10000])
+lr._use_gd = True
 lr.set_lambda(0.1)
-lr.set_num_iters(20)
+lr.set_num_iters(100)
 lr.set_method('BFGS')
 lr.set_scaling_method('normalize')
 import time
