@@ -1,3 +1,4 @@
+from tempfile import TemporaryFile
 from .tools import preprocess
 from .tools import func
 import pandas as pd
@@ -84,7 +85,10 @@ class KMeans(Model):
         return self._centroids * self._scaling[2] + self._scaling[1]
 
     def _init_centroids(self):
-        x = self._scaling[0]
+        try:
+            x = self._scaling[0]
+        except AttributeError:
+            x = self._x
         c = []
         for i in range(self._num_centroids):
             c.append(x[np.random.randint(0, self._SAMPLE_SIZE)])
@@ -94,16 +98,25 @@ class KMeans(Model):
         return np.array([np.linalg.norm(x - c) for c in self._centroids])
 
     def _cost(self):
-        return np.sum(self._distance_to_centroids(self._scaling[0]))
-
+        try:
+            x = self._scaling[0]
+        except AttributeError:
+            x = self._x
+        return np.sum(self._distance_to_centroids(x)) / self._SAMPLE_SIZE
     def _assign(self):
-        x = self._scaling[0]
+        try:
+            x = self._scaling[0]
+        except AttributeError:
+            x = self._x
         self._y = np.zeros(self._SAMPLE_SIZE)
         for i in range(self._SAMPLE_SIZE):
             self._y[i] = np.argmin(self._distance_to_centroids(x[i]))
 
     def _update(self):
-        x = self._scaling[0]
+        try:
+            x = self._scaling[0]
+        except AttributeError:
+            x = self._x
         for i in range(self._num_centroids):
             self._centroids[i] = np.mean(x[self._y == i], axis=0)
 
