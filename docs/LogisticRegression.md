@@ -10,7 +10,7 @@ Method|Return|Description
 --- |---|-----
 `set_x(value:list-like)`|None|Set the input data.
 `set_y(value:list-like)`|None|Set the target data.
-`set_lambda(value:float|int)`|None|Set the regularization parameter.
+`set_lambda(value:float\|int)`|None|Set the regularization parameter.
 `set_method(value:str)`|None|Set the method of optimization.
 `use_gradient_decent(value:bool)`|None|Whether or not to use gradient decent.
 `set_iter_num(value:int)`|None|Set the maximum number of iteration. If not being set, there will be no limit.
