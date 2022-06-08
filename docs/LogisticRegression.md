@@ -12,10 +12,8 @@ Method|Return|Description
 `set_y(value:list-like)`|None|Set the target data.
 `set_lambda(value:float\|int)`|None|Set the regularization parameter.
 `set_method(value:str)`|None|Set the method of optimization.
-`use_gradient_decent(value:bool)`|None|Whether or not to use gradient decent.
 `set_iter_num(value:int)`|None|Set the maximum number of iteration. If not being set, there will be no limit.
 `set_scaling_method(value:str)`|None|Set the scaling method. Either 'standardize' or 'normalize'.
-`set_disp(value:bool)`|None|Whether or not to display the process.
 `fit()`|None|Fit the model.
 `predict(x:list-like)`|tuple|Predict the target of the input. Return the predicted class and a list of probability of each class.
 `cost()`|ndarray|Return the cost of the model.
