@@ -296,3 +296,4 @@ class KNN(Model):
             else:
                 class_count[y[i]] += np.exp(-k_val[i]**2)
         return max(class_count, key=class_count.get)
+        
