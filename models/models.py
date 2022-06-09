@@ -15,9 +15,6 @@ class Model:
         logging.info('Object initialized')
         self._scaling_method = None
 
-    def fit(self):
-        pass
-
     def set_x(self, value):
         self._x = value
         self._NUM_SAMPLES = np.size(value, 0)
@@ -53,12 +50,16 @@ class Model:
         pass
 
     def train_accuracy(self):
-        self._accuracy = 0
-        for i in range(self._NUM_SAMPLES):
-            if self.predict(self._x[i]) == self._y[i]:
-                self._accuracy += 1
-        self._accuracy /= self._NUM_SAMPLES
-        return self._accuracy
+        try: 
+            if not self._y:
+                raise AttributeError('y is not set')
+        except:
+            self._accuracy = 0
+            for i in range(self._NUM_SAMPLES):
+                if self.predict(self._x[i]) == self._y[i]:
+                    self._accuracy += 1
+            self._accuracy /= self._NUM_SAMPLES
+            return self._accuracy
 
 
 class KMeans(Model):
