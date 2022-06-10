@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from . import preprocess
+import preprocess
 
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
@@ -79,3 +79,19 @@ def stochastic_gradient_descent(x, y, lambda_, grad, learning_rate, iterations, 
         plt.plot(np.array(costs))
         plt.show()
     return theta
+
+def get_act_func(act_fun):
+    def sigmoid(x):
+        return 1 / (1 + np.exp(-x))
+    def grad_sigmoid(x):
+        return sigmoid(x) * (1 - sigmoid(x))
+    def relu(x):
+        return np.maximum(0, x)
+    def grad_relu(x):
+        return 0 if x < 0 else 1
+    act_fun = act_fun.lower()
+    if act_fun == 'sigmoid':
+        return {'act_func': sigmoid, 'grad': grad_sigmoid, 'name': 'sigmoid'}
+    if act_fun == 'relu':
+        return {'act_func': relu, 'grad': grad_relu, 'name': 'relu'}
+    raise ValueError('Invalid activation function')
