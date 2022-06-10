@@ -8,6 +8,7 @@ class NN(Model):
     def __init__(self, nodes_per_layer:tuple|list):
         self._NUM_NODES = nodes_per_layer
         self._NUM_LAYERS = len(nodes_per_layer)
+<<<<<<< HEAD
         self._weights = []
         for i in range(self._NUM_LAYERS - 1):
             self._weights.append(np.random.randn(self._NUM_NODES[i]+1, self._NUM_NODES[i + 1]+1)) # +1 for bias
@@ -64,8 +65,4 @@ class NN(Model):
             a.append(act_func(z[i+1]))
         
         return z, a
-            
-
-            
-
-
+        
