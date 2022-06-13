@@ -6,7 +6,7 @@ from .tools import func
 
 
 class NN(Model):
-    def __init__(self, nodes_per_hidden_layer:tuple|list):
+    def __init__(self, *nodes_per_hidden_layer):
         '''
         Initialize a neural network with the given number of nodes per layer.
         '''
@@ -31,10 +31,7 @@ class NN(Model):
         w = []
         for i in range(self._NUM_LAYERS - 1):
             # No bias needed for output layer
-            if i == self._NUM_LAYERS - 2:
-                w.append(np.random.randn(self._NUM_NODES[i]+1, self._NUM_NODES[i + 1]))
-            else:
-                w.append(np.random.randn(self._NUM_NODES[i]+1, self._NUM_NODES[i + 1]+1))
+            w.append(np.random.randn(self._NUM_NODES[i]+1, self._NUM_NODES[i + 1]))
         self._weights = w
         self._theta_initialized = True
 
@@ -93,14 +90,15 @@ class NN(Model):
         act_func = self._activation_func['act_func']
         grad = self._activation_func['grad']
 
-        z = preprocess.add_bias(sample.reshape(sample.shape[0], 1))
+        z = sample.reshape(sample.shape[0], 1)
         a = [z]
-        g = [grad(z)]
+        g = []
         for i in range(self._NUM_LAYERS - 1):
-            z = self._weights[i].T @ z # (nodes_per_layer[i+1], nodes_per_layer[i]+1) @ (nodes_per_layer[i]+1, 1) = (nodes_per_layer[i+1], 1)
+            z = preprocess.add_bias(a[-1])
             g.append(grad(z))
+            z = self._weights[i].T @ z # (nodes_per_layer[i+1], nodes_per_layer[i]+1) @ (nodes_per_layer[i]+1, 1) = (nodes_per_layer[i+1], 1)
             a.append(act_func(z))
-            z = a[i + 1]
+        g.append(grad(z))
         return a, g
         
     def _backward_prop(self, sample, y):
@@ -114,8 +112,6 @@ class NN(Model):
         Returns:
         grad: numpy.ndarray: the gradient of the cost function with respect to the weights
         '''
-        act_func = self._activation_func['act_func']
-        grad = self._activation_func['grad']
         
         # Performing feedforward
         a, g = self._forward_prop(sample)
@@ -123,24 +119,25 @@ class NN(Model):
         # Computing the gradient of the cost function
         grad_cost = []
         for i in range(self._NUM_LAYERS - 1):
-            grad_cost.append(np.zeros((self._NUM_NODES[i], self._NUM_NODES[i + 1])))
+            grad_cost.append(np.zeros((self._NUM_NODES[i] + 1, self._NUM_NODES[i + 1])))
         grad_cost.append(g[-1] * (a[-1] - y.reshape(y.shape[0], 1)))
         for i in range(self._NUM_LAYERS - 2, -1, -1):
             grad_cost[i] = g[i] * (self._weights[i] @ grad_cost[i + 1])
         return grad_cost
 
-    def _flatten_grad(self, grad):
+    def _flatten_x(self, x):
         flat = []
         original_shape = []
-        if type(grad) == 'list' or type(grad) == 'tuple':
-            for i in range(len(grad)):
-                original_shape.append(grad[i].shape)
-                flat.extend(grad[i].flatten())
+        if type(x) == 'list' or type(x) == 'tuple':
+            for i in range(len(x)):
+                original_shape.append(x[i].shape)
+                flat.extend(x[i].flatten())
             flat = np.array(flat)
             return flat, original_shape
-        if type(grad) == 'np.ndarray':
-            original_shape.append(grad.shape)
-            return grad.flatten(), original_shape
+            
+        if type(x) == 'np.ndarray':
+            original_shape.append(x.shape)
+            return x.flatten(), original_shape
         else:
             raise ValueError(f'Invalid type. Require: list, tuple, np.ndarray while got {type(x)}')
 
