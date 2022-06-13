@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import preprocess
+from . import preprocess
 
 
 def sigmoid(x: np.ndarray) -> np.ndarray:
@@ -88,10 +88,18 @@ def get_act_func(act_fun):
     def relu(x):
         return np.maximum(0, x)
     def grad_relu(x):
-        return 0 if x < 0 else 1
+        return 1 * (x > 0)
     act_fun = act_fun.lower()
     if act_fun == 'sigmoid':
         return {'act_func': sigmoid, 'grad': grad_sigmoid, 'name': 'sigmoid'}
     if act_fun == 'relu':
         return {'act_func': relu, 'grad': grad_relu, 'name': 'relu'}
     raise ValueError('Invalid activation function')
+
+def flatten(x):
+    if type(x) == 'list' or type(x) == 'tuple':
+        return [flatten(i) for i in x]
+    if type(x) == 'np.ndarray':
+        return x.flatten()
+    else:
+        raise ValueError(f'Invalid type. Require: list, tuple, np.ndarray while got {type(x)}')
