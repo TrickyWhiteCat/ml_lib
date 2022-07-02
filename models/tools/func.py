@@ -81,20 +81,34 @@ def stochastic_gradient_descent(x, y, lambda_, grad, learning_rate, iterations, 
     return theta
 
 def get_act_func(act_fun):
+
     def sigmoid(x):
         return 1 / (1 + np.exp(-x))
-    def grad_sigmoid(x):
+    def deri_sigmoid(x):
         return sigmoid(x) * (1 - sigmoid(x))
+
     def relu(x):
         return np.maximum(0, x)
-    def grad_relu(x):
+    def deri_relu(x):
         return 1 * (x > 0)
+
+    def softmax(x):
+        if type(x) != np.ndarray:
+            x = np.array(x)
+        e_x = np.exp(x)
+        A = e_x / e_x.sum(axis = 0)
+        return A 
+    def deri_softmax(x):
+        return softmax(x)*(1 - softmax(x))
+
     act_fun = act_fun.lower()
     if act_fun == 'sigmoid':
-        return {'act_func': sigmoid, 'grad': grad_sigmoid, 'name': 'sigmoid'}
+        return {'act_func': sigmoid, 'deri': deri_sigmoid, 'name': 'sigmoid'}
     if act_fun == 'relu':
-        return {'act_func': relu, 'grad': grad_relu, 'name': 'relu'}
-    raise ValueError('Invalid activation function')
+        return {'act_func': relu, 'deri': deri_relu, 'name': 'relu'}
+    if act_fun == 'softmax':
+        return {'act_func': softmax, 'deri': deri_softmax, 'name': 'softmax'}
+    raise ValueError('Unsupported activation function')
 
 def flatten(x):
     if type(x) == 'list' or type(x) == 'tuple':

@@ -105,7 +105,7 @@ Trong biểu thức $\sum_{k=0}^{m}w_{jk}^{(l+1)}a_{k}^{(l)}$, chỉ có một �
 trong đó $\circ$ là tích Hadamard, là phép nhân các phần tử tương ứng của 2 vector/ma trận với nhau.
 
 Thêm vào đó: 
-\[\begin{pmatrix} \sum_{j=1}^{n}(\frac{\partial{C}}{\partial{z^{(l+1)}_{j}}}w_{j0}^{(l+1)})\\\sum_{j=1}^{n}(\frac{\partial{C}}{\partial{z^{(l+1)}_{j}}}w_{j1}^{(l+1)})\\.\\.\\. \end{pmatrix}= \begin{pmatrix}w^{(l+1)}_{10}&.&.&.&w^{(l+1)}_{n0}\\w^{(l+1)}_{11}&.&.&.&w^{(l+1)}_{n1}\\.&.&&&.\\.&&.&&.\\.&&&.&.\\w^{(l+1)}_{1m}&.&.&.&w^{(l+1)}_{nm} \end{pmatrix} \begin{pmatrix} \frac{\partial{C}}{\partial{z^{(l+1)}_{1}}}\\\frac{\partial{C}}{\partial{z^{(l+1)}_{2}}}\\.\\.\\. \end{pmatrix}=(W^{(l+1)})^{T}\delta^{(l+1)}\]
+\[\begin{pmatrix} \sum_{j=1}^{n}(\frac{\partial{C}}{\partial{z^{(l+1)}_{j}}}w_{j1}^{(l+1)})\\\sum_{j=1}^{n}(\frac{\partial{C}}{\partial{z^{(l+1)}_{j}}}w_{j2}^{(l+1)})\\.\\.\\. \end{pmatrix}= \begin{pmatrix}w^{(l+1)}_{11}&.&.&.&w^{(l+1)}_{n1}\\.&.&&&.\\.&&.&&.\\.&&&.&.\\w^{(l+1)}_{1m}&.&.&.&w^{(l+1)}_{nm} \end{pmatrix} \begin{pmatrix} \frac{\partial{C}}{\partial{z^{(l+1)}_{1}}}\\\frac{\partial{C}}{\partial{z^{(l+1)}_{2}}}\\.\\.\\. \end{pmatrix}=(W^{(l+1)})^{T}\delta^{(l+1)}\]
 
 \[\Leftrightarrow \delta^{(l)} = \varphi'(z^{(l)}) \circ (W^{(l+1)})^{T}\delta^{(l+1)}\]
 
