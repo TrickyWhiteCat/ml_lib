@@ -88,7 +88,7 @@ class NeuralNet(Model):
 
         return a, grad
 
-    def _cost(self, sample, ground_truth):
+    def _cost(self, sample, ground_truth, weights):
         y, _ = self._fwd(sample)
         return -ground_truth.T @ np.log(y)
 
@@ -117,4 +117,4 @@ class NeuralNet(Model):
             self._update_weights(grad)
 
     def predict(self, sample):
-        return self._fwd(sample.reshape(1, -1))[0]
+        return self._fwd(sample.reshape(1, -1))[0][-1]
