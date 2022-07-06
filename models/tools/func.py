@@ -83,7 +83,7 @@ def stochastic_gradient_descent(x, y, lambda_, grad, learning_rate, iterations, 
 def get_act_func(act_fun):
 
     def sigmoid(x):
-        return 1 / (1 + np.exp(-x))
+        return np.nan_to_num(1 / (1 + np.exp(-x)))
     def deri_sigmoid(x):
         return sigmoid(x) * (1 - sigmoid(x))
 
@@ -96,7 +96,7 @@ def get_act_func(act_fun):
         if type(x) != np.ndarray:
             x = np.array(x)
         e_x = np.exp(x)
-        A = e_x / e_x.sum(axis = 0)
+        A = np.nan_to_num(e_x / e_x.sum(axis = 0))
         return A 
     def deri_softmax(x):
         return softmax(x)*(1 - softmax(x))

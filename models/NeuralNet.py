@@ -89,8 +89,8 @@ class NeuralNet(Model):
         return a, grad
 
     def _cost(self, sample, ground_truth):
-        y, _ = self._fwd(sample)
-        return -ground_truth.T @ np.log(y)
+        y = self._fwd(sample)[0][-1]
+        return -(ground_truth.T @ np.log(y)) -((1 - ground_truth.T) @ np.log(1-y))
 
     def _back_prop(self, sample, y):
         '''Return the derivative of the cost function w.r.t the weights using ONLY ONE SAMPLE'''
@@ -99,7 +99,7 @@ class NeuralNet(Model):
         a, g = self._fwd(sample)
         # Cost function: cross entropy
         y = y.reshape(-1, 1)
-        delta = -y.T @ g[-1] / a[-1]
+        delta = a[-1] - y
         grad = []
         for idx in range(self._NUM_LAYERS, 1, -1):
             grad.append(delta @ preprocess.add_bias(a[idx - 1].T))
@@ -113,8 +113,9 @@ class NeuralNet(Model):
 
     def fit(self):
         for sample in zip(self._x, self._y):
+            print(self._cost(sample[0], sample[1]))
             grad = self._back_prop(sample[0], sample[1])
             self._update_weights(grad)
 
     def predict(self, sample):
-        return self._fwd(sample.reshape(1, -1))[0]
+        return self._fwd(sample.reshape(1, -1))[0][-1]
