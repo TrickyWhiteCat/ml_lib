@@ -83,8 +83,8 @@ class NeuralNet(Model):
             z = w @ preprocess.add_bias(a[-1])
             grad.append(hidden_deri(z))
             a.append(hidden_act_func(z))
-        a[-1] = output_act_func(z)
-        grad[-1] = output_deri(z)
+        a[-1] = output_act_func(z).reshape(-1, 1)
+        grad[-1] = output_deri(z).reshape(-1, 1)
 
         return a, grad
 
@@ -102,7 +102,7 @@ class NeuralNet(Model):
         delta = a[-1] - y
         grad = []
         for idx in range(self._NUM_LAYERS, 1, -1):
-            grad.append(delta @ preprocess.add_bias(a[idx - 1].T))
+            grad.append(delta @ preprocess.add_bias(a[idx - 1]).T)
             delta = g[idx - 1] * (self._weights[idx].T @ delta)[1:]
 
         return grad[::-1]
