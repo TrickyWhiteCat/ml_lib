@@ -36,9 +36,10 @@ class Model:
     def _scale_feature_x(self):
           # Make sure x is 2D array
         x = np.reshape(np.copy(self._x), (self._NUM_SAMPLES, self._SIZE // self._NUM_SAMPLES))
-        if not self._scaling_method: return
-        if self._scaling_method == 'standardize':
-            self._scaling = preprocess.stardardize(x)
+        if not self._scaling_method:
+            self._scaling = (x, 0, 1)
+        elif self._scaling_method == 'standardize':
+            self._scaling = preprocess.standardize(x)
         elif self._scaling_method == 'normalize':
             self._scaling = preprocess.normalize(x)
 
