@@ -9,6 +9,7 @@ class NeuralNet(Model):
         self._NUM_NODES = tuple(num_nodes_per_layer)
         self._NUM_LAYERS = len(num_nodes_per_layer)
         self._learning_rate = 1
+        self._lambda_ = 0
         # Initialize weight matrices
         self._weights = [np.array(0), np.array(0)] # np.array(0) is added so that the index will start from 1 instead of 0
         for idx in range(len(num_nodes_per_layer) - 1):
@@ -51,6 +52,9 @@ class NeuralNet(Model):
     def set_learning_rate(self, value):
         self._learning_rate = float(value)
 
+    def set_lambda(self, value):
+        self._lambda_ = float(value)
+
     @property
     def hidden_activation_function(self):
         return self._activation_function['name']
@@ -89,7 +93,10 @@ class NeuralNet(Model):
 
     def _cost(self, sample, ground_truth):
         y = self._fwd(sample)[0][-1]
-        return -(ground_truth.T @ np.log(y)) -((1 - ground_truth.T) @ np.log(1-y))
+        reg = 0
+        for w in self._weights:
+            reg += self._lambda_ * np.sum(w**2) / 2
+        return -(ground_truth.T @ np.log(y)) -((1 - ground_truth.T) @ np.log(1-y)) + reg
 
     def _back_prop(self, sample, y):
         '''Return the derivative of the cost function w.r.t the weights using ONLY ONE SAMPLE'''
@@ -101,7 +108,7 @@ class NeuralNet(Model):
         delta = a[-1] - y
         grad = []
         for idx in range(self._NUM_LAYERS, 1, -1):
-            grad.append(delta @ preprocess.add_bias(a[idx - 1]).T)
+            grad.append(delta @ preprocess.add_bias(a[idx - 1]).T + self._lambda_ * self._weights[idx])
             delta = g[idx - 1] * (self._weights[idx].T @ delta)[1:]
 
         return grad[::-1]
@@ -112,7 +119,7 @@ class NeuralNet(Model):
 
     def fit(self):
         for sample in zip(self._x, self._y):
-            print(self._cost(sample[0], sample[1]))
+            #print(self._cost(sample[0], sample[1]))
             grad = self._back_prop(sample[0], sample[1])
             self._update_weights(grad)
 

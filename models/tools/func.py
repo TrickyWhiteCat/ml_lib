@@ -92,6 +92,11 @@ def get_act_func(act_fun):
     def deri_relu(x):
         return 1 * (x > 0)
 
+    def leaky_relu(x):
+        return np.where(x > 0, x, x * 0.001)
+    def deri_leaky_relu(x):
+        return np.where(x > 0, 1, 0.001)
+
     def softmax(x):
         if type(x) != np.ndarray:
             x = np.array(x)
@@ -108,6 +113,8 @@ def get_act_func(act_fun):
         return {'act_func': relu, 'deri': deri_relu, 'name': 'relu'}
     if act_fun == 'softmax':
         return {'act_func': softmax, 'deri': deri_softmax, 'name': 'softmax'}
+    if act_fun == 'leaky_relu':
+        return {'act_func': leaky_relu, 'deri': deri_leaky_relu, 'name': 'leaky relu'}
     raise ValueError('Unsupported activation function')
 
 def flatten(x):
