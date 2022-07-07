@@ -2,7 +2,6 @@ from .tools import func, preprocess
 from .models import Model
 import numpy as np
 
-import matplotlib.pyplot as plt
 
 class NeuralNet(Model):
 
@@ -109,7 +108,7 @@ class NeuralNet(Model):
 
     def _update_weights(self, grad):
         for idx in range(self._NUM_LAYERS, 1, -1):
-            self._weights[idx] - self._learning_rate * grad[idx -2]
+            self._weights[idx] -= self._learning_rate * grad[idx -2]
 
     def fit(self):
         for sample in zip(self._x, self._y):
@@ -118,4 +117,4 @@ class NeuralNet(Model):
             self._update_weights(grad)
 
     def predict(self, sample):
-        return self._fwd(sample.reshape(1, -1))[0][-1]
+        return np.argmax(self._fwd(sample.reshape(1, -1))[0][-1])

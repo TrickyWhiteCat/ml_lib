@@ -1,29 +1,22 @@
-from tempfile import TemporaryFile
 from .tools import preprocess
 from .tools import func
-import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import optimize as opt
 import numpy as np
-import logging
 
 
-logging.basicConfig(level=logging.CRITICAL, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S', filename='model.log', filemode='w')
 class Model:
     def __init__(self):
-        self._num_iters = None
-        logging.info('Object initialized')
+        self._num_iters = 50
         self._scaling_method = None
 
     def set_x(self, value):
         self._x = value
         self._NUM_SAMPLES = np.size(value, 0)
         self._SIZE = np.size(value)
-        logging.info('x is set')
 
     def set_num_iters(self, value):
         self._num_iters = value
-        logging.info('num_iters is set to {}'.format(value))
 
     def set_scaling_method(self, value):
         if value not in ['standardize', 'normalize']:
@@ -36,7 +29,7 @@ class Model:
         if not self._scaling_method: 
             return x, 0, 1
         if self._scaling_method == 'standardize':
-            self._scaling = preprocess.stardardize(x)
+            self._scaling = preprocess.standardize(x)
         elif self._scaling_method == 'normalize':
             self._scaling = preprocess.normalize(x)
 
