@@ -6,6 +6,8 @@ import numpy as np
 class NeuralNet(Model):
 
     def __init__(self, *num_nodes_per_layer):
+        np.seterr(divide='ignore', invalid='ignore', over = 'ignore')
+        self._type = 'regression'
         self._NUM_NODES = tuple(num_nodes_per_layer)
         self._NUM_LAYERS = len(num_nodes_per_layer)
         self._learning_rate = 1
@@ -70,6 +72,17 @@ class NeuralNet(Model):
     def output_activation_function(self, value):
         self._output_activation_function = func.get_act_func(value)
 
+    @property
+    def type(self):
+        return self._type
+    @type.setter
+    def type(self):
+        accept_type = ('regression', 'classification')
+        if type not in accept_type:
+            raise ValueError(f'{type} is not supported. Expected: {accept_type}')
+        self._type = type
+        
+
     def _fwd(self, sample):
         '''Samples must be preprocessed before added to the model and have the shape of (n, 1)'''
 
@@ -125,3 +138,20 @@ class NeuralNet(Model):
 
     def predict(self, sample):
         return np.argmax(self._fwd(sample.reshape(1, -1))[0][-1])
+
+    # Cost functions
+
+    def _mean_square(self, sample, ground_truth):
+        y = self._fwd(sample)[0][-1]
+        reg = 0
+        for w in self._weights:
+            reg += self._lambda_ * np.sum(w**2) / 2
+        diff = (y - ground_truth).reshape(-1, 1)
+        return (diff @ diff.T + reg) / diff.shape[0]
+
+    def _cross_entropy(self, sample, ground_truth):
+        y = self._fwd(sample)[0][-1]
+        reg = 0
+        for w in self._weights:
+            reg += self._lambda_ * np.sum(w**2) / 2
+        return -(ground_truth.T @ np.log(y)) -((1 - ground_truth.T) @ np.log(1-y)) + reg
