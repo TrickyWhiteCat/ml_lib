@@ -77,12 +77,12 @@ class NeuralNet(Model):
     def type(self):
         return self._type
     @type.setter
-    def type(self):
+    def type(self, value):
         accept_type = ('regression', 'classification')
-        if type not in accept_type:
-            raise ValueError(f'{type} is not supported. Expected: {accept_type}')
-        self._type = type
-        self._cost_func = self._cross_entropy if type == accept_type[1] else self._mean_square
+        if value not in accept_type:
+            raise ValueError(f'{value} is not supported. Expected: {accept_type}')
+        self._type = value
+        self._cost_func = self._cross_entropy if value == accept_type[1] else self._mean_square
         
 
     def _fwd(self, sample):
@@ -150,7 +150,7 @@ class NeuralNet(Model):
         for w in self._weights:
             reg += self._lambda_ * np.sum(w**2) / 2
             reg_d += self._lambda_ * np.sum(w) / 2
-        diff = (ground_truth - y).reshape(-1, 1)
+        diff = (y - ground_truth).reshape(-1, 1)
         return (diff @ diff.T + reg) / 2, diff
 
     def _cross_entropy(self, y, ground_truth):
@@ -158,4 +158,4 @@ class NeuralNet(Model):
         reg = 0
         for w in self._weights:
             reg += self._lambda_ * np.sum(w**2) / 2
-        return (-(ground_truth.T @ np.log(y)) -((1 - ground_truth.T) @ np.log(1-y)) + reg) / y.shape[0], ground_truth - y
+        return (-(ground_truth.T @ np.log(y)) -((1 - ground_truth.T) @ np.log(1-y)) + reg) / y.shape[0], y - ground_truth
