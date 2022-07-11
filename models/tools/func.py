@@ -106,6 +106,9 @@ def get_act_func(act_fun):
     def deri_softmax(x):
         return softmax(x)*(1 - softmax(x))
 
+    if act_fun is None:
+        return {'act_func': lambda x:x, 'deri': lambda x: np.array(1), 'name': None}
+
     act_fun = act_fun.lower()
     if act_fun == 'sigmoid':
         return {'act_func': sigmoid, 'deri': deri_sigmoid, 'name': 'sigmoid'}

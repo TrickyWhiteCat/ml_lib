@@ -8,6 +8,7 @@ class NeuralNet(Model):
     def __init__(self, *num_nodes_per_layer):
         np.seterr(divide='ignore', invalid='ignore', over = 'ignore')
         self._type = 'regression'
+        self._cost_func = self._mean_square
         self._NUM_NODES = tuple(num_nodes_per_layer)
         self._NUM_LAYERS = len(num_nodes_per_layer)
         self._learning_rate = 1
@@ -81,6 +82,7 @@ class NeuralNet(Model):
         if type not in accept_type:
             raise ValueError(f'{type} is not supported. Expected: {accept_type}')
         self._type = type
+        self._cost_func = self._cross_entropy if type == accept_type[1] else self._mean_square
         
 
     def _fwd(self, sample):
@@ -118,7 +120,7 @@ class NeuralNet(Model):
         a, g = self._fwd(sample)
         # Cost function: cross entropy
         y = y.reshape(-1, 1)
-        delta = a[-1] - y
+        delta = self._cost_func(y = a[-1].reshape(-1, 1), ground_truth=y)[1]
         grad = []
         for idx in range(self._NUM_LAYERS, 1, -1):
             grad.append(delta @ preprocess.add_bias(a[idx - 1]).T + self._lambda_ * self._weights[idx])
@@ -139,19 +141,21 @@ class NeuralNet(Model):
     def predict(self, sample):
         return np.argmax(self._fwd(sample.reshape(1, -1))[0][-1])
 
-    # Cost functions
+    # Cost functions; return the value of the cost and its derivative w.r.t its input
 
-    def _mean_square(self, sample, ground_truth):
-        y = self._fwd(sample)[0][-1]
+    def _mean_square(self, y, ground_truth):
+        '''Return: cost, delta'''
+        reg = 0
+        reg_d = 0
+        for w in self._weights:
+            reg += self._lambda_ * np.sum(w**2) / 2
+            reg_d += self._lambda_ * np.sum(w) / 2
+        diff = (ground_truth - y).reshape(-1, 1)
+        return (diff @ diff.T + reg) / 2, diff
+
+    def _cross_entropy(self, y, ground_truth):
+        '''Return: cost, delta'''
         reg = 0
         for w in self._weights:
             reg += self._lambda_ * np.sum(w**2) / 2
-        diff = (y - ground_truth).reshape(-1, 1)
-        return (diff @ diff.T + reg) / diff.shape[0]
-
-    def _cross_entropy(self, sample, ground_truth):
-        y = self._fwd(sample)[0][-1]
-        reg = 0
-        for w in self._weights:
-            reg += self._lambda_ * np.sum(w**2) / 2
-        return -(ground_truth.T @ np.log(y)) -((1 - ground_truth.T) @ np.log(1-y)) + reg
+        return (-(ground_truth.T @ np.log(y)) -((1 - ground_truth.T) @ np.log(1-y)) + reg) / y.shape[0], ground_truth - y
