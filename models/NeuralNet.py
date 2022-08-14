@@ -237,4 +237,4 @@ class NeuralNet(Model):
                 reg += self._lambda_ * np.sum(w**2) / 2
         def log(val):
             return cp.log(val) if self._cp else np.log(val)
-        return (-(ground_truth.T @ log(y)) -((1 - ground_truth.T) @ log(1-y)) + reg) / sum(self._NUM_NODES), y - ground_truth
+        return -(ground_truth.T @ log(y)) -((1 - ground_truth.T) @ log(1-y)) + reg, y - ground_truth
