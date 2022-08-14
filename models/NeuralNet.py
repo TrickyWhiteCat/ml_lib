@@ -189,7 +189,7 @@ class NeuralNet(Model):
                 self._update_weights(grad)
             rand = np.random.randint(0, self._NUM_SAMPLES)
             print(f'''--> Epoch {i + 1} took {(time.time() - start):.2f}s
-    Current cost: {self._cost_func(sample = self._scaling[0][rand], ground_truth = self._y[rand])[0]}
+    Current cost for a random sample: {self._cost_func(sample = self._scaling[0][rand], ground_truth = self._y[rand])[0]}
 ''')
         print(f'Current train accuracy: {self.train_accuracy()}')
 
