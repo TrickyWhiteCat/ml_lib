@@ -27,14 +27,14 @@ class Model:
           # Make sure x is 2D array
         x = np.reshape(np.copy(self._x), (self._NUM_SAMPLES, self._SIZE // self._NUM_SAMPLES))
         if not self._scaling_method: 
-            return x, 0, 1
+            self._scaling =  np.array(x), np.array(0), np.array(1)
         if self._scaling_method == 'standardize':
             self._scaling = preprocess.standardize(x)
         elif self._scaling_method == 'normalize':
             self._scaling = preprocess.normalize(x)
 
     def _scale_feature(self, x):
-        if not self._scaling_method: return x
+        if not self._scaling_method: return np.array(x)
         return np.nan_to_num((x - self._scaling[1]) / self._scaling[2])
 
     def fit(self):

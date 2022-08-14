@@ -98,27 +98,26 @@ def get_act_func(act_fun):
         return np.where(x > 0, 1, 0.001)
 
     def softmax(x):
-        if type(x) != np.ndarray:
-            x = np.array(x)
         e_x = np.exp(x)
         A = np.nan_to_num(e_x / e_x.sum(axis = 0))
         return A 
     def deri_softmax(x):
         return softmax(x)*(1 - softmax(x))
 
+    supported = {
+        'sigmoid': {'act_func': sigmoid, 'deri': deri_sigmoid, 'name': 'sigmoid'},
+        'relu': {'act_func': relu, 'deri': deri_relu, 'name': 'relu'},
+        'softmax': {'act_func': softmax, 'deri': deri_softmax, 'name': 'softmax'},
+        'leaky_relu': {'act_func': leaky_relu, 'deri': deri_leaky_relu, 'name': 'leaky relu'}}
+
     if act_fun is None:
         return {'act_func': lambda x:x, 'deri': lambda x: np.array(1), 'name': None}
 
     act_fun = act_fun.lower()
-    if act_fun == 'sigmoid':
-        return {'act_func': sigmoid, 'deri': deri_sigmoid, 'name': 'sigmoid'}
-    if act_fun == 'relu':
-        return {'act_func': relu, 'deri': deri_relu, 'name': 'relu'}
-    if act_fun == 'softmax':
-        return {'act_func': softmax, 'deri': deri_softmax, 'name': 'softmax'}
-    if act_fun == 'leaky_relu':
-        return {'act_func': leaky_relu, 'deri': deri_leaky_relu, 'name': 'leaky relu'}
-    raise ValueError('Unsupported activation function')
+    try:
+        return supported[act_fun]
+    except KeyError:
+        raise ValueError('Unsupported activation function')
 
 def flatten(x):
     if type(x) == 'list' or type(x) == 'tuple':
