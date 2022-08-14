@@ -74,7 +74,7 @@ class NeuralNet(Model):
             if value.shape[-1] != self._NUM_NODES[-1]:
                 raise ValueError(f"Y's 2nd dimension's length({value.shape[-1]}) and the number of output nodes({self._NUM_NODES[-1]}) are mismatched")
 
-            self._y = cp.array(value) if self.cp else np.array(value)
+            self._y = cp.array(value) if self._cp else np.array(value)
 
     def set_learning_rate(self, value):
         self._learning_rate = float(value)
@@ -146,6 +146,8 @@ class NeuralNet(Model):
         return a, grad
 
     def train_accuracy(self):
+        if self.type != 'classification':
+            return
         crr = 0
         for pack in zip(self._x, self._y):
             sample = pack[0] if not self._cp else cp.array(pack[0])
@@ -204,14 +206,18 @@ class NeuralNet(Model):
                     return self._label[np.argmax(res.get())]  # if cupy is used, it's needed to use .get()
                 except AttributeError:
                     print(f"Oops something is wrong. res's type is {type(res)}")
+        return res
                 
 
     # Cost functions; return the value of the cost and its derivative w.r.t its input
 
-    def _mean_square(self, y, ground_truth):
+    def _mean_square(self, y = None, sample = None, ground_truth = None):
         '''Return: cost, delta'''
         reg = 0
         reg_d = 0
+        if y is None:
+            if sample is not None:
+                y = self._fwd(sample)[0][-1]
         if self._cp:
             for w in self._weights:
                 reg += self._lambda_ * cp.sum(w**2) / 2
@@ -221,7 +227,7 @@ class NeuralNet(Model):
                 reg += self._lambda_ * np.sum(w**2) / 2
                 reg_d += self._lambda_ * np.sum(w) / 2
         diff = (y - ground_truth).reshape(-1, 1)
-        return (diff @ diff.T + reg) / 2, diff
+        return (diff.T @ diff + reg) / 2, diff
 
     def _cross_entropy(self, y = None, sample = None, ground_truth = None,):
         '''Return: cost, delta. If both `sample` and 'y' are passed through, `y` will be prioritized'''
