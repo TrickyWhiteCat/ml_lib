@@ -41,9 +41,9 @@ def gradient_descent(x, y, lambda_, grad, learning_rate, iterations, costf = Non
         plot = kwargs['plot_cost']
     else:
         plot = False
-    theta = preprocess.init_theta(x.shape[1])
+    theta = preprocess.init_theta(x.shape[1]).reshape(-1, 1)
     for i in range(iterations):
-        theta -= learning_rate * grad(theta, x, y, lambda_)
+        theta = theta.reshape(-1) - learning_rate * grad(theta, x, y, lambda_)
         if plot and costf:
             cost = costf(theta, x, y, lambda_)
             costs = [] if i == 0 else costs + [cost]
