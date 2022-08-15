@@ -17,17 +17,18 @@ class LogisticRegression(Model):
 
     def _grad(self, theta, x, y, lambda_):
         SAMPLE_SIZE = np.size(x, 0)
-        y_hat = func.sigmoid(x @ theta)
+        y_hat = func.sigmoid(x @ theta).reshape(-1)
         grad = (x.T @ (y_hat - y)) / SAMPLE_SIZE + lambda_ / SAMPLE_SIZE * theta
         return grad
 
     def __init__(self):
-        self._use_gd = False
+        self.use_gd = False
         self._method = None
         self.disp = False
         self._lambda_ = 0
         self._learning_rate = 1
         self._scaling_method = None
+        self._num_iters = 1000
         logging.info('Object initialized')
 
     def set_y(self, value):
@@ -74,11 +75,11 @@ class LogisticRegression(Model):
         # Map y to one-hot encoding to use one vs all if necessary
         y = np.array(pd.get_dummies(self._y))
 
-        logging.info('Attempting to fit data using {}...'.format('gradient descent' if self._use_gd else ('scipy minimize with ' + method) if method else 'scipy minimize'))
+        logging.info('Attempting to fit data using {}...'.format('gradient descent' if self.use_gd else ('scipy minimize with ' + method) if method else 'scipy minimize'))
         res = []
         for i in range(self._NUM_CLASS):
             y_i = y[:, i]
-            if self._use_gd:
+            if self.use_gd:
                 if SAMPLE_SIZE > 1000000:
                     logging.warning('Use stochastic gradient descent for large sample size')
                     theta = func.stochastic_gradient_descent(x, y_i, lambda_, grad = self._grad, costf = self._cost, learning_rate=self._learning_rate, iterations = num_iters, plot_cost=self.disp)
