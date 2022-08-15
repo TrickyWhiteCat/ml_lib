@@ -79,3 +79,50 @@ def stochastic_gradient_descent(x, y, lambda_, grad, learning_rate, iterations, 
         plt.plot(np.array(costs))
         plt.show()
     return theta
+
+def get_act_func(act_fun):
+
+    def sigmoid(x):
+        return np.nan_to_num(1 / (1 + np.exp(-x)))
+    def deri_sigmoid(x):
+        return sigmoid(x) * (1 - sigmoid(x))
+
+    def relu(x):
+        return np.maximum(0, x)
+    def deri_relu(x):
+        return 1 * (x > 0)
+
+    def leaky_relu(x):
+        return np.where(x > 0, x, x * 0.001)
+    def deri_leaky_relu(x):
+        return np.where(x > 0, 1, 0.001)
+
+    def softmax(x):
+        e_x = np.exp(x)
+        A = np.nan_to_num(e_x / e_x.sum(axis = 0))
+        return A 
+    def deri_softmax(x):
+        return softmax(x)*(1 - softmax(x))
+
+    supported = {
+        'sigmoid': {'act_func': sigmoid, 'deri': deri_sigmoid, 'name': 'sigmoid'},
+        'relu': {'act_func': relu, 'deri': deri_relu, 'name': 'relu'},
+        'softmax': {'act_func': softmax, 'deri': deri_softmax, 'name': 'softmax'},
+        'leaky_relu': {'act_func': leaky_relu, 'deri': deri_leaky_relu, 'name': 'leaky relu'}}
+
+    if act_fun is None:
+        return {'act_func': lambda x:x, 'deri': lambda x: np.array(1), 'name': None}
+
+    act_fun = act_fun.lower()
+    try:
+        return supported[act_fun]
+    except KeyError:
+        raise ValueError('Unsupported activation function')
+
+def flatten(x):
+    if type(x) == 'list' or type(x) == 'tuple':
+        return [flatten(i) for i in x]
+    if type(x) == 'np.ndarray':
+        return x.flatten()
+    else:
+        raise ValueError(f'Invalid type. Require: list, tuple, np.ndarray while got {type(x)}')
