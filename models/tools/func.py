@@ -108,12 +108,12 @@ def get_act_func(act_fun):
         'sigmoid': {'act_func': sigmoid, 'deri': deri_sigmoid, 'name': 'sigmoid'},
         'relu': {'act_func': relu, 'deri': deri_relu, 'name': 'relu'},
         'softmax': {'act_func': softmax, 'deri': deri_softmax, 'name': 'softmax'},
-        'leaky_relu': {'act_func': leaky_relu, 'deri': deri_leaky_relu, 'name': 'leaky relu'}}
+        'leakyrelu': {'act_func': leaky_relu, 'deri': deri_leaky_relu, 'name': 'leaky relu'}}
 
     if act_fun is None:
         return {'act_func': lambda x:x, 'deri': lambda x: np.array(1), 'name': None}
 
-    act_fun = act_fun.lower()
+    act_fun = ''.join(act_fun.lower().split()) # Remove whitespaces; lower characters
     try:
         return supported[act_fun]
     except KeyError:
