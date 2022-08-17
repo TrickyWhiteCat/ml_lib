@@ -2,7 +2,7 @@ import numpy as np
 
 
 def init_theta(size):
-    return np.random.randn(size)
+    return np.random.uniform(low = -1, high= 1, size=size)
 
 def normalize(x):
     x = np.array(x)

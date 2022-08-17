@@ -31,9 +31,9 @@ class NeuralNet(Model):
         for idx in range(len(num_nodes_per_layer) - 1):
             # Add to the list a matrix with size (num_nodes_target_layer, num_nodes_prev_layers + 1). +1 for the bias.
             if use_cupy:
-                rand_w = cp.random.rand(num_nodes_per_layer[idx + 1], num_nodes_per_layer[idx] + 1) - 0.5
+                rand_w = cp.random.uniform(low=-1, high=1, size = (num_nodes_per_layer[idx + 1], num_nodes_per_layer[idx] + 1))
             else:
-                rand_w = np.random.rand(num_nodes_per_layer[idx + 1], num_nodes_per_layer[idx] + 1) - 0.5
+                rand_w = np.random.uniform(low=-1, high=1, size = (num_nodes_per_layer[idx + 1], num_nodes_per_layer[idx] + 1))
             self._weights.append(rand_w) # Just to make it have both negative and positive elements
 
     def set_x(self, value):
