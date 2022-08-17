@@ -32,13 +32,13 @@ class KNearestNeighbors(Model):
         self._CLASSES = np.unique(value)
         self._NUM_CLASSES = np.size(self._CLASSES)
 
-    def distance(self, x):
+    def _distance(self, x):
         return np.array([np.linalg.norm(x - c) for c in self._scaling[0]])
     
     def predict(self, sample):
         if self._scaling_method:
             sample = self._scale_feature(sample.reshape(1, -1))
-        distance = self.distance(sample)
+        distance = self._distance(sample)
         order = np.argsort(distance)
         data = [distance[order][:self._k], self._y[order][:self._k]]
         k_val = data[0]

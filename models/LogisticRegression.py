@@ -46,7 +46,7 @@ class LogisticRegression(Model):
         self._method = value
         logging.info('method is set to {}'.format(value))
     
-    def set_learning_rate(self, value: float):
+    def set_learning_rate(self, value):
         self._learning_rate = value
         logging.info('learning_rate set to {}'.format(value))
 
